@@ -1,27 +1,8 @@
+#include"huff.h"
 #include<stdio.h>
 #include<stdlib.h>
 #include<limits.h>
-
-#define MAXNODES 512
-#define CHARS 256
-
-typedef struct node {
-	struct node *C1, *C2;
-	int count;
-	int symbol;
-} huffnode;
-
-typedef struct huffchar {
-	int symbol;
-	unsigned int count;
-	unsigned int path;
-	unsigned int bits;
-} huffchar;
-
-typedef struct bstrm {
-	unsigned char *currbyte;
-	unsigned int currbit;
-} bitstream;
+#include<string.h>
 
 void initBitStream(bitstream *strm, unsigned char *in) {
 	strm->currbyte = in;
@@ -38,7 +19,6 @@ long GetFileSize( FILE *f ) {
 
 	return size;
 }
-
 
 void printhuffchar(huffchar *s) {
 	int i;
@@ -135,14 +115,14 @@ huffnode* GenerateHuffTree(huffchar *s) {
 		if(s[k].count > 0) {
 			node[num].symbol = s[k].symbol;
 			node[num].count = s[k].count;
-			node[num].C1 = node[num].C2 = NULL;
+			node[num].C1 = node[num].C2 = (huffnode*) 0;
 			num++;
 		}
 	}
 	
 	/* Look for the Lowest Count Nodes */
 	huffnode *n1, *n2, *root;
-	root = NULL;
+	root = (huffnode*) 0;
 	int total = num;
 	huffnode *n;
 	n = (huffnode*) malloc (sizeof(huffnode));
@@ -183,7 +163,7 @@ void StoreHuffTree(huffnode *node, huffchar *s, bitstream *strm, int path, int b
 		for(k = 0; k < CHARS; k++)
 			if(node->symbol == s[k].symbol)
 				break;
-		printf("%c ", node->symbol);
+		//printf("%c ", node->symbol);
 		s[k].path = path;
 		s[k].bits = bits;
 		return;
@@ -203,7 +183,7 @@ huffnode* ReadHuffTree(huffnode *node, bitstream *strm, int *num) {
 	currnode->C1 = currnode->C2 = (huffnode*) 0;
 	if(readBit(strm)) {
 		currnode->symbol = (char) readByte(strm);
-		printf("%c ", currnode->symbol);
+		//printf("%c ", currnode->symbol);
 		return currnode;
 	}
 	currnode->C1 = ReadHuffTree(node, strm, num);
@@ -223,7 +203,7 @@ void HuffUncompress(unsigned char *in, unsigned char *out, unsigned int insize) 
 		n = root;
 	
 		while(n->symbol < 0) {
-			printf("%d ", n->symbol);
+			//printf("%d ", n->symbol);
 			if(readBit(&strm) == 1) {
 				n = n->C2;
 			}
@@ -231,7 +211,7 @@ void HuffUncompress(unsigned char *in, unsigned char *out, unsigned int insize) 
 				n = n->C1;
 		}
 		*buf ++ = (unsigned char) n->symbol;
-		printf("%c ", n->symbol);
+		//printf("%c ", n->symbol);
 		
 	}
 }
@@ -245,10 +225,10 @@ unsigned int HuffCompress(unsigned char *in, unsigned char *out, int insize) {
 	StoreHuffTree(root, sym, &strm, 0, 0);
 	int k = 0, symbol;
 	char ch = '#';
-	printf("\n\n    %d    \n\n", sym[ch].path);
+	//printf("\n\n    %d    \n\n", sym[ch].path);
 	for(k = 0; k <= insize; k++) {
 		symbol = in[k];
-		printf("%c%d ", symbol, sym[symbol].path);
+		//printf("%c%d ", symbol, sym[symbol].path);
 		writeBits(&strm, sym[symbol].path, sym[symbol].bits);
 	}
 	long outsize = (int) (strm.currbyte - out);
@@ -256,93 +236,5 @@ unsigned int HuffCompress(unsigned char *in, unsigned char *out, int insize) {
 	printf("%d----->%ld\n", insize, outsize);
 	return outsize;
 }
-
-int main( int argc, char *argv[]) {
-	FILE *f;
-	unsigned char *in, *out, command;
-	unsigned int  insize, outsize = 0;
-	char *inname, *outname;
-	int orig;
-	if( argc < 4 )
-		return 1;
-
-	command = argv[1][0];
-	inname  = argv[2];
-	outname = argv[3];
-		
-	f = fopen( inname, "rb" );
-	if(!f) {
-		printf( "Unable to open input file \"%s\".\n", inname);
-		return 0;
-	}
-	insize = GetFileSize(f);
-	in = (unsigned char *) malloc( insize );
-	if( !in ) {
-		printf( "Not enough memory\n");	
-		fclose( f );
-		return 0;
-	}	
-	if(command == 'c') {
-
-		fread( in, insize, 1, f );
-		fclose(f);
-
-		f = fopen( outname, "wb" );
-		if(!f) {
-			printf( "Unable to open output file \"%s\".\n", outname );
-			free( in );
-			return 0;
-		}
-		outsize = (insize * 2);
-		out = malloc(outsize);
-		if(!out) {
-			printf( "Not enough memory\n" );
-			fclose( f );
-			free( in );
-			return 0;
-		}
-		outsize = HuffCompress( in, out, insize);
-		fwrite(&insize, sizeof(unsigned int), 1, f);
-		fwrite(out, outsize, 1, f);
-		fclose(f);
-		double percent = (double)outsize/insize;
-		printf("Compression Successful : %lf%% reduced\n", (1-percent)*100);
-	}
-	else if(command == 'd') {
-
-		fread( &orig, sizeof(unsigned int), 1, f );
-		insize -= 4;
-		printf("%d\n", insize);
-		fread( in, insize, 1, f );
-		fclose(f);
-
-		f = fopen( outname, "wb" );
-		if(!f) {
-			printf( "Unable to open output file \"%s\".\n", outname );
-			free( in );
-			return 0;
-		}
-		outsize = orig;
-		out = malloc(outsize);
-		if(!out) {
-			printf( "Not enough memory\n" );
-			fclose( f );
-			free( in );
-			return 0;
-		}
-		printf("%d\n", orig); 
-		HuffUncompress( in, out, outsize);
-		fwrite(out, outsize, 1, f);
-		fclose(f);
-		printf("\nDecompression Successful\n");
-	}
-
-	free( in );
-	free( out );
-	
-	return 0;
-
-}
-
 
 
