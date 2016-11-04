@@ -15,7 +15,7 @@ void Help(char *prog) {
 	printf( "  -huff   		Huffman Compression\n" );	
 	printf( "Commands:\n" );
 	printf( "  -c			Compress/Encode input file to output file.\n" );
-	printf( "  -d 	 		Deompress/Decode input file to output file.\n" );
+	printf( "  -d 	 		Decompress/Decode input file to output file.\n" );
 	printf( "Input/Output Files:\n");
 	printf( "  -i <filename>		Name of input file.\n");
 	printf( "  -o <filename>		Name of output file.\n");
@@ -63,16 +63,34 @@ int main( int argc, char *argv[]) {
 	outname = argv[6];
 
 	if(argc > 7) {
-		if((strcmp("-l", argv[7]) == 0) && (strcmp("-l", argv[7]) == 0)) {
-			la = atoi(argv[8]);
-			if((la < MIN_LA) || (la > MAX_LA)) {
-				printf("Invalid value for LookAhead Buffer\nReverting back to DEFAULT\n");
-				la = -1;
+		if(argc < 10) {
+			if((strcmp("-l", argv[7]) == 0)){
+				la = atoi(argv[8]);
+				if((la < MIN_LA) || (la > MAX_LA)) {
+					printf("Invalid value for LookAhead Buffer\nReverting back to DEFAULT\n");
+					la = -1;
+				}
 			}
-			sb = atoi(argv[10]);
-			if((sb < MIN_SB) || (sb > MAX_SB)) {
-				printf("Invalid value for Search Buffer\nReverting back to DEFAULT\n");
-				sb = -1;
+			else if(strcmp("-s", argv[7]) == 0){
+				sb = atoi(argv[8]);
+				if((sb < MIN_SB) || (sb > MAX_SB)) {
+					printf("Invalid value for Search Buffer\nReverting back to DEFAULT\n");
+					sb = -1;
+				}
+			}
+		}
+		else {
+			if((strcmp("-l", argv[7]) == 0) && (strcmp("-s", argv[9]) == 0)) {
+				la = atoi(argv[8]);
+				if((la < MIN_LA) || (la > MAX_LA)) {
+					printf("Invalid value for LookAhead Buffer\nReverting back to DEFAULT\n");
+					la = -1;
+				}
+				sb = atoi(argv[10]);
+				if((sb < MIN_SB) || (sb > MAX_SB)) {
+					printf("Invalid value for Search Buffer\nReverting back to DEFAULT\n");
+					sb = -1;
+				}
 			}
 		}
 	}

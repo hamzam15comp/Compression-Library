@@ -113,7 +113,7 @@ void LZUncompress(unsigned char* in, unsigned char *out, unsigned int insize) {
 	readBits(&strm, &SB_SIZE, sizeof(SB_SIZE), 16);
 	readBits(&strm, &LA_SIZE, sizeof(LA_SIZE), 16);
 
-	while(1) {
+	while(read < insize) {
 
 		/* read the code from bitstream*/
 		t = readcode(&strm, LA_SIZE, SB_SIZE);
@@ -125,10 +125,7 @@ void LZUncompress(unsigned char* in, unsigned char *out, unsigned int insize) {
 			read++;
 			t.len--;
 		}
-		if(t.next != '\0')
-			buffer[read] = t.next;
-		else
-			break;
+		buffer[read] = t.next;
 		read++;
 	}
 }
