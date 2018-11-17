@@ -12,11 +12,11 @@ This library implemented in ANSI C comprises of algorithms:
 		<pre>
 Usage: ./project &ltALGORITHM&gt &ltCOMMANDS&gt &ltINPUT&gt &ltOUTPUT&gt
 	Algorithms:
-		-lz77   		LZ77 Compression
-		-huff   		Huffman Compression;	
+		-lz77   	LZ77 Compression
+		-huff   	Huffman Compression;	
 	Commands:
-		-c			Compress/Encode input file to output file.
-		-d 	 		Decompress/Decode input file to output file.
+		-c		Compress/Encode input file to output file.
+		-d 	 	Decompress/Decode input file to output file.
 	Input/Output Files:
 		-i <filename>		Name of input file.
 		-o <filename>		Name of output file.
